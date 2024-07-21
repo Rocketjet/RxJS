@@ -1,6 +1,14 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { from, fromEvent, of } from 'rxjs';
+import { filter, from, fromEvent, map, Observable, of } from 'rxjs';
+import { CustomObserver } from './custom-observer';
+
+interface User {
+  id: string;
+  name: string;
+  age: number;
+  isActive: boolean;
+}
 
 @Component({
   selector: 'app-root',
@@ -9,31 +17,54 @@ import { from, fromEvent, of } from 'rxjs';
   templateUrl: './app.component.html',
 })
 export class AppComponent {
-  users = [
-    { id: '1', name: 'John', age: 30 },
-    { id: '2', name: 'Jack', age: 35 },
-    { id: '3', name: 'Mike', age: 25 },
+  users: User[] = [
+    { id: '1', name: 'John', age: 30, isActive: true },
+    { id: '2', name: 'Jack', age: 35, isActive: false },
+    { id: '3', name: 'Mike', age: 25, isActive: true },
   ];
   constructor() {
     const numbers$ = of([1, 2, 3, 4]).subscribe((data) => {
       console.log(data); //[1, 2, 3, 4] - конвертує передане значення в Observable
     });
-
-    const numbers1$ = from([1, 2, 3, 4]).subscribe((data) => {
+    const numbers1$ = from([1, 2, 3, 4]);
+    numbers1$.subscribe((data) => {
       console.log(data); //1, 2, 3, 4  - конвертує передане значення (Array, Promise, Iterable) в Observable і повертає значення один за одним
     });
-    
+    numbers1$.subscribe(new CustomObserver()); //кастомний Observer
+
+    //Promise
     const messagePromise = new Promise((resolve) => {
       setTimeout(() => {
         resolve('Promise resolved');
       }, 1000);
     });
-
-    const users$ = of(this.users); 
-    const message$ = from(messagePromise); 
+    // Using operators
+    const users$ = of(this.users);
+    const message$ = from(messagePromise);
     const bodyClick$ = fromEvent(document, 'click');
-    
-    // Subscribing with  Happy path callback
+    const userNames$ = of(this.users).pipe(
+      map((users) => users.map((user) => user.name))
+    );
+    const users2$: Observable<User[]> = new Observable((observer) => {
+      // observer.next(null);
+      setTimeout(() => {
+        observer.next(this.users);
+        observer.next(this.users.map((user) => ({ ...user, isActive: true })));
+      }, 2000);
+    });
+
+    const filteredUsers$ = users2$.pipe(
+      filter((users) => {
+        return users.every((user) => user.isActive);
+      }) // Потрібно розуміти, що оператор filter фільтрує не значення масиву, а сам стрім
+      // Вище ми емітимо 2 масива де в одному всі користувачі активні, а в іншому ні і у filteredUsers$ попаде лише той, де всі активні
+    );
+
+    filteredUsers$.subscribe((users) => {
+      console.log(users);
+    });
+
+    // Subscribing with Happy path callback
     users$.subscribe((users) => {
       console.log('users', users); // Array of users
     });
@@ -45,6 +76,7 @@ export class AppComponent {
     bodyClick$.subscribe((event) => {
       console.log('event', event);
     });
+
     // Subscribing with full notation
     message$.subscribe({
       next: (message) => {
@@ -56,6 +88,13 @@ export class AppComponent {
       complete: () => {
         console.log('complete');
       },
-    })
+    });
+
+    // Custom Observable
+    const users1$ = new Observable((observer) => {
+      this.users.forEach((user) => {
+        observer.next(user);
+      });
+    });
   }
 }
