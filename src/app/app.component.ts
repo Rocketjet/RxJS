@@ -1,27 +1,28 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { filter, from, fromEvent, map, Observable, of } from 'rxjs';
+import { catchError, filter, from, fromEvent, map, Observable, of } from 'rxjs';
 import { CustomObserver } from './custom-observer';
-
-interface User {
-  id: string;
-  name: string;
-  age: number;
-  isActive: boolean;
-}
-
+import { HttpClient } from '@angular/common/http';
+import { User } from './interfaces/user.interface';
+import { Comment } from './interfaces/comment.interface';
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CommonModule],
   templateUrl: './app.component.html',
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  http = inject(HttpClient);
   users: User[] = [
     { id: '1', name: 'John', age: 30, isActive: true },
     { id: '2', name: 'Jack', age: 35, isActive: false },
     { id: '3', name: 'Mike', age: 25, isActive: true },
   ];
+  comments$: Observable<Comment[]> = this.http
+    .get<Comment[]>('http://localhost:3004/comments')
+    .pipe(catchError(() => of([]))); //Handling an error an return an observable
+
   constructor() {
     const numbers$ = of([1, 2, 3, 4]).subscribe((data) => {
       console.log(data); //[1, 2, 3, 4] - конвертує передане значення в Observable
@@ -96,5 +97,18 @@ export class AppComponent {
         observer.next(user);
       });
     });
+  }
+
+  ngOnInit() {
+    // this.http
+    //   .get<Comment[]>('http://localhost:3004/comments')
+    //   .subscribe({
+    //     next: (comments) => {
+    //       console.log('comments', comments);
+    //     },
+    //     error: (error) => {
+    //       console.log('error', error);
+    //     }
+    //   });
   }
 }
