@@ -1,15 +1,16 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { catchError, filter, from, fromEvent, map, Observable, of } from 'rxjs';
+import { catchError, combineLatest, filter, from, fromEvent, map, Observable, of } from 'rxjs';
 import { CustomObserver } from './custom-observer';
 import { HttpClient } from '@angular/common/http';
 import { User } from './interfaces/user.interface';
 import { Comment } from './interfaces/comment.interface';
 import { CommonModule } from '@angular/common';
+import { FilterMapComponent } from './components/filter-map/filter-map.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule],
+  imports: [RouterOutlet, CommonModule, FilterMapComponent],
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
@@ -46,6 +47,13 @@ export class AppComponent implements OnInit {
     const userNames$ = of(this.users).pipe(
       map((users) => users.map((user) => user.name))
     );
+    const data$ = combineLatest({
+      users: of(this.users),
+      messagePromise: from(messagePromise)
+    }); //використовується, коли треба згрупувати декілька стрімів в єдиний стрім
+    // Працюватиме лише за умови, що кожен стрім надасть хоча б одне значення
+
+    // Creating an Observable manually
     const users2$: Observable<User[]> = new Observable((observer) => {
       // observer.next(null);
       setTimeout(() => {
@@ -53,7 +61,7 @@ export class AppComponent implements OnInit {
         observer.next(this.users.map((user) => ({ ...user, isActive: true })));
       }, 2000);
     });
-
+    // Filtering with filter operator
     const filteredUsers$ = users2$.pipe(
       filter((users) => {
         return users.every((user) => user.isActive);

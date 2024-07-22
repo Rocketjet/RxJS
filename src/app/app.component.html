@@ -3,4 +3,5 @@
 @for (comment of comments$ | async; track $index) {
   <div>{{ comment.body }}</div>
 }
+<app-filter-map></app-filter-map>
 <router-outlet />
