@@ -1,4 +1,14 @@
 {
+  "posts": [
+    {
+      "id": "1",
+      "title": "Learn RXJS"
+    },
+    {
+      "id": "2",
+      "title": "Learn Angular"
+    }
+  ],
   "comments": [
     {
       "id": "1",
