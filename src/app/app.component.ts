@@ -21,10 +21,11 @@ import { User } from './interfaces/user.interface';
 import { Comment } from './interfaces/comment.interface';
 import { CommonModule } from '@angular/common';
 import { FilterMapComponent } from './components/filter-map/filter-map.component';
+import { DebounceComponent } from './components/debounce/debounce.component';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, FilterMapComponent],
+  imports: [RouterOutlet, CommonModule, FilterMapComponent, DebounceComponent],
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
@@ -37,7 +38,7 @@ export class AppComponent implements OnInit {
   ];
   comments$: Observable<Comment[]> = this.http
     .get<Comment[]>('http://localhost:3004/comments')
-    .pipe(catchError(() => of([]))); //Handling an error an returning an observable
+    .pipe(catchError(() => of([]))); //? Handling an error an returning an observable
 
   constructor() {}
 
@@ -60,40 +61,40 @@ export class AppComponent implements OnInit {
       }, 1000);
     });
     //<--------------------------------------------------------------------------->
-
     //? Using operators
-    const numbers$ = of([1, 2, 3, 4]).subscribe((data) => {
+    of([1, 2, 3, 4]).subscribe((data) => {
       console.log(data); //[1, 2, 3, 4] - конвертує передане значення в Observable
     });
     const numbers1$ = from([1, 2, 3, 4]);
     numbers1$.subscribe((data) => {
       console.log(data); //1, 2, 3, 4  - конвертує передане значення (Array, Promise, Iterable) в Observable і повертає значення один за одним
     });
-    numbers1$.subscribe(new CustomObserver()); //кастомний Observer
+    numbers1$.subscribe(new CustomObserver()); //? кастомний Observer
+    //! of()
     const users$ = of(this.users);
+    //! from()
     const message$ = from(messagePromise);
+    //! fromEvent()
     const bodyClick$ = fromEvent(document, 'click');
-    const userNames$ = of(this.users).pipe(
-      map((users) => users.map((user) => user.name))
-    );
-    const data$ = combineLatest({
+    of(this.users).pipe(map((users) => users.map((user) => user.name)));
+    //! combineLatest()
+    combineLatest({
       users: of(this.users),
       messagePromise: from(messagePromise),
     }); //використовується, коли треба згрупувати декілька стрімів в єдиний стрім
     // Працюватиме лише за умови, що кожен стрім надасть хоча б одне значення
-
+    //! forkJoin()
+    //? Схожий на Promise.all по своїй суті, тобто надасть останні актуальні значення в стрімі для кожного Observable, але якщо жоден не викинув помилку
     const posts$ = this.http.get('http://localhost:3004/posts');
     const comments$ = this.http.get('http://localhost:3004/comments');
-
-    //? Using forkJoin operator. Схожий на Promise.all по своїй суті, тобто надасть останні актуальні значення в стрімі для кожного Observable, але якщо жоден не викинув помилку
     forkJoin({
       posts: posts$,
       comments: comments$,
     }).subscribe((result) => {
       console.log(result);
     });
-
-    //? Using withLatestFrom operator. Емітить значення лише якщо основний Observable надав значення в свою чергу.
+    //! withLatestFrom()
+    //? Емітить значення лише якщо основний Observable надав значення в свою чергу.
     //? тобто тільки коли ми отримали пости, ми візьмемо 'initial value' як останнє значення в стрімі, очікування 5 секунд не відбуватиметься
     const customValue$ = new Observable((observer) => {
       observer.next('initial value');
@@ -111,7 +112,6 @@ export class AppComponent implements OnInit {
         1: 'initial value'
       */
     });
-
     //? Creating an Observable manually
     const users2$: Observable<User[]> = new Observable((observer) => {
       // observer.next(null);
@@ -120,8 +120,7 @@ export class AppComponent implements OnInit {
         observer.next(this.users.map((user) => ({ ...user, isActive: true })));
       }, 2000);
     });
-
-    //? Using filter operator
+    //! filter()
     const filteredUsers$ = users2$.pipe(
       filter((users) => {
         return users.every((user) => user.isActive);
@@ -132,9 +131,8 @@ export class AppComponent implements OnInit {
     filteredUsers$.subscribe((users) => {
       console.log(users);
     });
-
     //? Distinct operators
-    //? distinct()
+    //! distinct()
     from(this.users)
       .pipe(distinct((user) => user.age))
       .subscribe((users) => {
@@ -152,8 +150,7 @@ export class AppComponent implements OnInit {
       .subscribe((value) => {
         console.log(value); // 1, 2, 3
       });
-
-    //? distinctUntilChanged()
+    //! distinctUntilChanged()
     new Observable((observer) => {
       observer.next(1);
       observer.next(2);
@@ -163,8 +160,7 @@ export class AppComponent implements OnInit {
       .subscribe((value) => {
         console.log(value); // 1, 2, 1
       });
-
-    //? distinctUntilKeyChanged()
+    //! distinctUntilKeyChanged()
     new Observable<{ name: string }>((observer) => {
       observer.next({ name: 'John' });
       observer.next({ name: 'John' });
@@ -189,7 +185,6 @@ export class AppComponent implements OnInit {
       console.log('event', event);
     });
     //<--------------------------------------------------------------------------->
-
     //? Subscribing with full notation
     message$.subscribe({
       next: (message) => {
@@ -203,9 +198,8 @@ export class AppComponent implements OnInit {
       },
     });
     //<--------------------------------------------------------------------------->
-
     //? Custom Observable
-    const users1$ = new Observable((observer) => {
+    new Observable((observer) => {
       this.users.forEach((user) => {
         observer.next(user);
       });
