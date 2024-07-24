@@ -21,16 +21,20 @@ export class SubjectComponent implements OnInit {
 
   constructor() {
     //! Subject()
-    this.subject$.subscribe((value) => console.log(value)); // отримаємо дані, які було додано в стрім нижче
+    this.subject$.subscribe((value) => {
+      // console.log(value);
+    }); // отримаємо дані, які було додано в стрім нижче
     this.subject$.next(this.users);
 
     //! BehaviorSubject()
     //? Відрізняється від Subject тим, що потребує початкового значення і може надавати його підписникам незалежно від того, коли вони підписались на нього.
     //? Також це значення можна отримати напряму через getValue()
-    this.behaviorSubject$.subscribe((value) => console.log(value)); // спочатку тут буде [], потім вже відповідні дані надані в next()
+    this.behaviorSubject$.subscribe((value) => {
+      // console.log(value);
+    }); // спочатку тут буде [], потім вже відповідні дані надані в next()
     this.behaviorSubject$.next(this.users);
     const value = this.behaviorSubject$.getValue();
-    console.log(value); //отримаємо наших юзерів
+    // console.log(value); //отримаємо наших юзерів
   }
 
   ngOnInit(): void {
@@ -44,25 +48,29 @@ export class SubjectComponent implements OnInit {
         observer.next(3);
       }, 3000);
     });
-    observable$.subscribe((value) =>
-      console.log('observable observer 1', value)
-    );
-    observable$.subscribe((value) =>
-      console.log('observable observer 2', value)
-    );
+    observable$.subscribe((value) => {
+      // console.log('observable observer 1', value);
+    });
+    observable$.subscribe((value) => {
+      // console.log('observable observer 2', value)
+    });
     //? Обидва підписники отримають всі згенеровані дані
 
     //! Subject()
     const subject$ = new Subject();
     subject$.next(1);
 
-    subject$.subscribe((value) => console.log('subject observer 1', value));
+    subject$.subscribe((value) => {
+      // console.log('subject observer 1', value);
+    });
 
     setTimeout(() => {
       subject$.next(2);
       subject$.next(3);
 
-      subject$.subscribe((value) => console.log('subject observer 2', value));
+      subject$.subscribe((value) => {
+        // console.log('subject observer 2', value);
+      });
     }, 3000);
     subject$.next(4);
     //? В 1 підписку попадуть значення, згенеровані після активації підписки
@@ -75,17 +83,17 @@ export class SubjectComponent implements OnInit {
     const behaviorSubject$ = new BehaviorSubject(0);
     behaviorSubject$.next(1);
 
-    behaviorSubject$.subscribe((value) =>
-      console.log('behaviorSubject observer 1', value)
-    );
+    behaviorSubject$.subscribe((value) => {
+      // console.log('behaviorSubject observer 1', value)
+    });
 
     setTimeout(() => {
       behaviorSubject$.next(2);
       behaviorSubject$.next(3);
 
-      behaviorSubject$.subscribe((value) =>
-        console.log('behaviorSubject observer 2', value)
-      );
+      behaviorSubject$.subscribe((value) => {
+        // console.log('behaviorSubject observer 2', value);
+      });
     }, 3000);
     behaviorSubject$.next(4);
     //? В 1 підписку попаде дефолтне значення, яке одразу ж буде перезаписане на 1 і далі всі наступні згенеровані значення
@@ -100,17 +108,17 @@ export class SubjectComponent implements OnInit {
     const replaySubject$ = new ReplaySubject();
     replaySubject$.next(1);
 
-    replaySubject$.subscribe((value) =>
-      console.log('replaySubject observer 1', value)
-    );
+    replaySubject$.subscribe((value) => {
+      // console.log('replaySubject observer 1', value);
+    });
 
     setTimeout(() => {
       replaySubject$.next(2);
       replaySubject$.next(3);
 
-      replaySubject$.subscribe((value) =>
-        console.log('replaySubject observer 2', value)
-      );
+      replaySubject$.subscribe((value) => {
+        // console.log('replaySubject observer 2', value);
+      });
     }, 3000);
     replaySubject$.next(4);
     //? Цей тип Subject буде емітити всі згенеровані значення для всіх підписників, неважливо коли ці значення були згенеровані

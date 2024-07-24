@@ -1,9 +1,12 @@
 <h1>RxJS</h1>
 
 @for (comment of comments$ | async; track $index) {
-  <div>{{ comment.body }}</div>
+<div>{{ comment.body }}</div>
 }
 <app-filter-map></app-filter-map>
 <app-debounce></app-debounce>
 <app-subject></app-subject>
+<app-maps-types></app-maps-types>
+<app-observables-hell></app-observables-hell>
+
 <router-outlet />

@@ -2,13 +2,13 @@ import { Observer } from 'rxjs';
 
 export class CustomObserver implements Observer<number> {
   next(value: number): void {
-    console.log(value);
+    // console.log(value);
   }
   error(error: string): void {
-    console.log(error);
+    // console.log(error);
   }
   complete(): void {
-    console.log('complete');
+    // console.log('complete');
   }
 }
 

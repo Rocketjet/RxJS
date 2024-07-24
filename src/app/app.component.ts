@@ -13,6 +13,7 @@ import {
   map,
   Observable,
   of,
+  retry,
   scan,
   tap,
   withLatestFrom,
@@ -27,6 +28,8 @@ import { DebounceComponent } from './components/debounce/debounce.component';
 import { SubjectComponent } from './components/subject/subject.component';
 import { TodoService } from './services/todo.service';
 import { Todo } from './interfaces/todo.interface';
+import { MapsTypesComponent } from './components/maps-types/maps-types.component';
+import { ObservablesHellComponent } from './components/observables-hell/observables-hell.component';
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -36,6 +39,8 @@ import { Todo } from './interfaces/todo.interface';
     FilterMapComponent,
     DebounceComponent,
     SubjectComponent,
+    MapsTypesComponent,
+    ObservablesHellComponent,
   ],
   templateUrl: './app.component.html',
 })
@@ -65,11 +70,11 @@ export class AppComponent implements OnInit {
     //<--------------------------------------------------------------------------->
     //? Using operators
     of([1, 2, 3, 4]).subscribe((data) => {
-      console.log(data); //[1, 2, 3, 4] - конвертує передане значення в Observable
+      // console.log(data); //[1, 2, 3, 4] - конвертує передане значення в Observable
     });
     const numbers1$ = from([1, 2, 3, 4]);
     numbers1$.subscribe((data) => {
-      console.log(data); //1, 2, 3, 4  - конвертує передане значення (Array, Promise, Iterable) в Observable і повертає значення один за одним
+      // console.log(data); //1, 2, 3, 4  - конвертує передане значення (Array, Promise, Iterable) в Observable і повертає значення один за одним
     });
     numbers1$.subscribe(new CustomObserver()); //? кастомний Observer
     //! of()
@@ -89,11 +94,12 @@ export class AppComponent implements OnInit {
     //? Схожий на Promise.all по своїй суті, тобто надасть останні актуальні значення в стрімі для кожного Observable, але якщо жоден не викинув помилку
     const posts$ = this.http.get('http://localhost:3004/posts');
     const comments$ = this.http.get('http://localhost:3004/comments');
+    //? Запити будуть зроблені паралельно
     forkJoin({
       posts: posts$,
       comments: comments$,
     }).subscribe((result) => {
-      console.log(result);
+      // console.log(result);
     });
     //! withLatestFrom()
     //? Емітить значення лише якщо основний Observable надав значення в свою чергу.
@@ -106,7 +112,7 @@ export class AppComponent implements OnInit {
     });
     const posts1$ = this.http.get('http://localhost:3004/posts');
     posts1$.pipe(withLatestFrom(customValue$)).subscribe((result) => {
-      console.log(result);
+      // console.log(result);
       /*
         0: Array(2) 
           {id: '1', title: 'Learn RXJS'}
@@ -131,14 +137,14 @@ export class AppComponent implements OnInit {
     );
 
     filteredUsers$.subscribe((users) => {
-      console.log(users);
+      // console.log(users);
     });
     //? Distinct operators
     //! distinct()
     from(this.users)
       .pipe(distinct((user) => user.age))
       .subscribe((users) => {
-        console.log(users); // В підписку попадуть юзери у яких вік не повторюється
+        // console.log(users); // В підписку попадуть юзери у яких вік не повторюється
       });
 
     new Observable((observer) => {
@@ -150,7 +156,7 @@ export class AppComponent implements OnInit {
     })
       .pipe(distinct())
       .subscribe((value) => {
-        console.log(value); // 1, 2, 3
+        // console.log(value); // 1, 2, 3
       });
     //! distinctUntilChanged()
     new Observable((observer) => {
@@ -160,7 +166,7 @@ export class AppComponent implements OnInit {
     })
       .pipe(distinctUntilChanged())
       .subscribe((value) => {
-        console.log(value); // 1, 2, 1
+        // console.log(value); // 1, 2, 1
       });
     //! distinctUntilKeyChanged()
     new Observable<{ name: string }>((observer) => {
@@ -171,32 +177,35 @@ export class AppComponent implements OnInit {
     })
       .pipe(distinctUntilKeyChanged('name'))
       .subscribe((value) => {
-        console.log(value); // { name: 'John' }, { name: 'Mike' }
+        // console.log(value); // { name: 'John' }, { name: 'Mike' }
       });
+    //! retry()
+    this.http.get('http://localhost:3004/posts').pipe(retry({ count: 1, delay: 1000 }));
+    
     //<--------------------------------------------------------------------------->
     //? Subscribing with Happy path callback example
     users$.subscribe((users) => {
-      console.log('users', users); // Array of users
+      // console.log('users', users); // Array of users
     });
 
     message$.subscribe((message) => {
-      console.log('message', message); // Promise resolved
+      // console.log('message', message); // Promise resolved
     });
 
     bodyClick$.subscribe((event) => {
-      console.log('event', event);
+      // console.log('event', event);
     });
     //<--------------------------------------------------------------------------->
     //? Subscribing with full notation example
     message$.subscribe({
       next: (message) => {
-        console.log('message', message);
+        // console.log('message', message);
       },
       error: (error) => {
-        console.log('error', error);
+        // console.log('error', error);
       },
       complete: () => {
-        console.log('complete');
+        // console.log('complete');
       },
     });
     //<--------------------------------------------------------------------------->
@@ -208,21 +217,23 @@ export class AppComponent implements OnInit {
     });
     //<--------------------------------------------------------------------------->
     //? Working with Subjects
-    this.todoService.todos$.pipe(
-      scan((acc: Todo[] | [], val) => {
-        const isAdded = val.length > acc.length;
-        const isUpdated = val.length === acc.length && val.length !== 0;
-        const isRemoved = val.length < acc.length;
-        if (isAdded) {
-          console.log('todo has been added', val);
-        } else if (isUpdated) {
-          console.log('todo has been updated', val);
-        } else if (isRemoved) {
-          console.log('todo has been removed', val);
-        }
-        return val;
-      }, [])
-    ).subscribe();
+    this.todoService.todos$
+      .pipe(
+        scan((acc: Todo[] | [], val) => {
+          const isAdded = val.length > acc.length;
+          const isUpdated = val.length === acc.length && val.length !== 0;
+          const isRemoved = val.length < acc.length;
+          if (isAdded) {
+            // console.log('todo has been added', val);
+          } else if (isUpdated) {
+            // console.log('todo has been updated', val);
+          } else if (isRemoved) {
+            // console.log('todo has been removed', val);
+          }
+          return val;
+        }, [])
+      )
+      .subscribe();
 
     this.todoService.addTodo('Learn Angular');
     this.todoService.toggleTodo(this.todoService.todos$.getValue()[0].id);
