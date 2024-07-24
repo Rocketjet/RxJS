@@ -27,14 +27,14 @@ export class DebounceComponent {
     interval(1000)
       .pipe(debounce((val) => timer(val * 200)))
       .subscribe((value) => {
-        console.log(value);
+        // console.log(value);
       });
     //! debounceTime()
     this.searchForm
       .get('searchValue')
       ?.valueChanges.pipe(debounceTime(500))
       .subscribe((value) => {
-        console.log('debounced value', value);
+        // console.log('debounced value', value);
       });
     //? чекатиме вказаний час після останнього в стрімі значення і лише після відбудеться підписка. Якщо в проміжку очікування в стрім попаде нове значення, таймер обнулиться
 
@@ -49,7 +49,7 @@ export class DebounceComponent {
       .get('searchValue')
       ?.valueChanges.pipe(throttleTime(1000))
       .subscribe((value) => {
-        console.log('search change -> Call API', value);
+        // console.log('search change -> Call API', value);
       });
     //? генерує значення спочатку одразу ж і потім блокує нові значення на вказаний час
   }

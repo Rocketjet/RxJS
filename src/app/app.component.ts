@@ -13,6 +13,8 @@ import {
   map,
   Observable,
   of,
+  scan,
+  tap,
   withLatestFrom,
 } from 'rxjs';
 import { CustomObserver } from './custom-observer';
@@ -22,14 +24,25 @@ import { Comment } from './interfaces/comment.interface';
 import { CommonModule } from '@angular/common';
 import { FilterMapComponent } from './components/filter-map/filter-map.component';
 import { DebounceComponent } from './components/debounce/debounce.component';
+import { SubjectComponent } from './components/subject/subject.component';
+import { TodoService } from './services/todo.service';
+import { Todo } from './interfaces/todo.interface';
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, FilterMapComponent, DebounceComponent],
+  imports: [
+    RouterOutlet,
+    CommonModule,
+    FilterMapComponent,
+    DebounceComponent,
+    SubjectComponent,
+  ],
   templateUrl: './app.component.html',
 })
 export class AppComponent implements OnInit {
   http = inject(HttpClient);
+  todoService = inject(TodoService);
+
   users: User[] = [
     { id: '1', name: 'John', age: 30, isActive: true },
     { id: '2', name: 'Jack', age: 35, isActive: false },
@@ -43,17 +56,6 @@ export class AppComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {
-    // this.http
-    //   .get<Comment[]>('http://localhost:3004/comments')
-    //   .subscribe({
-    //     next: (comments) => {
-    //       console.log('comments', comments);
-    //     },
-    //     error: (error) => {
-    //       console.log('error', error);
-    //     }
-    //   });
-
     //? Promise
     const messagePromise = new Promise((resolve) => {
       setTimeout(() => {
@@ -172,7 +174,7 @@ export class AppComponent implements OnInit {
         console.log(value); // { name: 'John' }, { name: 'Mike' }
       });
     //<--------------------------------------------------------------------------->
-    //? Subscribing with Happy path callback
+    //? Subscribing with Happy path callback example
     users$.subscribe((users) => {
       console.log('users', users); // Array of users
     });
@@ -185,7 +187,7 @@ export class AppComponent implements OnInit {
       console.log('event', event);
     });
     //<--------------------------------------------------------------------------->
-    //? Subscribing with full notation
+    //? Subscribing with full notation example
     message$.subscribe({
       next: (message) => {
         console.log('message', message);
@@ -198,11 +200,32 @@ export class AppComponent implements OnInit {
       },
     });
     //<--------------------------------------------------------------------------->
-    //? Custom Observable
+    //? Manually created Observable
     new Observable((observer) => {
       this.users.forEach((user) => {
         observer.next(user);
       });
     });
+    //<--------------------------------------------------------------------------->
+    //? Working with Subjects
+    this.todoService.todos$.pipe(
+      scan((acc: Todo[] | [], val) => {
+        const isAdded = val.length > acc.length;
+        const isUpdated = val.length === acc.length && val.length !== 0;
+        const isRemoved = val.length < acc.length;
+        if (isAdded) {
+          console.log('todo has been added', val);
+        } else if (isUpdated) {
+          console.log('todo has been updated', val);
+        } else if (isRemoved) {
+          console.log('todo has been removed', val);
+        }
+        return val;
+      }, [])
+    ).subscribe();
+
+    this.todoService.addTodo('Learn Angular');
+    this.todoService.toggleTodo(this.todoService.todos$.getValue()[0].id);
+    this.todoService.removeTodo(this.todoService.todos$.getValue()[0].id);
   }
 }
