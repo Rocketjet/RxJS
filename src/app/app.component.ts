@@ -77,20 +77,20 @@ export class AppComponent implements OnInit {
       // console.log(data); //1, 2, 3, 4  - конвертує передане значення (Array, Promise, Iterable) в Observable і повертає значення один за одним
     });
     numbers1$.subscribe(new CustomObserver()); //? кастомний Observer
-    //! of()
+    //! of() - Emit variable amount of values in a sequence and then emits a complete notification.
     const users$ = of(this.users);
-    //! from()
+    //! from() - Turn an array, promise, or iterable into an observable.
     const message$ = from(messagePromise);
-    //! fromEvent()
+    //! fromEvent() - Turn event into observable sequence.
     const bodyClick$ = fromEvent(document, 'click');
     of(this.users).pipe(map((users) => users.map((user) => user.name)));
-    //! combineLatest()
+    //! combineLatest() - When any observable emits a value, emit the last emitted value from each.
     combineLatest({
       users: of(this.users),
       messagePromise: from(messagePromise),
     }); //використовується, коли треба згрупувати декілька стрімів в єдиний стрім
     // Працюватиме лише за умови, що кожен стрім надасть хоча б одне значення
-    //! forkJoin()
+    //! forkJoin() - When all observables complete, emit the last emitted value from each.
     //? Схожий на Promise.all по своїй суті, тобто надасть останні актуальні значення в стрімі для кожного Observable, але якщо жоден не викинув помилку
     const posts$ = this.http.get('http://localhost:3004/posts');
     const comments$ = this.http.get('http://localhost:3004/comments');
@@ -101,7 +101,7 @@ export class AppComponent implements OnInit {
     }).subscribe((result) => {
       // console.log(result);
     });
-    //! withLatestFrom()
+    //! withLatestFrom() - Also provide the last value from another observable.
     //? Емітить значення лише якщо основний Observable надав значення в свою чергу.
     //? тобто тільки коли ми отримали пости, ми візьмемо 'initial value' як останнє значення в стрімі, очікування 5 секунд не відбуватиметься
     const customValue$ = new Observable((observer) => {

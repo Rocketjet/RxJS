@@ -23,13 +23,13 @@ export class DebounceComponent {
   });
 
   constructor() {
-    //! debounce()
+    //! debounce() - Discard emitted values that take less than the specified time, based on selector function, between output.
     interval(1000)
       .pipe(debounce((val) => timer(val * 200)))
       .subscribe((value) => {
         // console.log(value);
       });
-    //! debounceTime()
+    //! debounceTime() - Discard emitted values that take less than the specified time between output
     this.searchForm
       .get('searchValue')
       ?.valueChanges.pipe(debounceTime(500))
@@ -38,13 +38,13 @@ export class DebounceComponent {
       });
     //? чекатиме вказаний час після останнього в стрімі значення і лише після відбудеться підписка. Якщо в проміжку очікування в стрім попаде нове значення, таймер обнулиться
 
-    //! throttle()
+    //! throttle() - Emit value on the leading edge of an interval, but suppress new values until durationSelector has completed.
     // interval(1000)
     //   .pipe(throttle((val) => timer(val * 200)))
     //   .subscribe((value) => {
     //     console.log('increased throttle', value);
     //   });
-    //! throttleTime()
+    //! throttleTime() - Emit first value then ignore for specified duration
     this.searchForm
       .get('searchValue')
       ?.valueChanges.pipe(throttleTime(1000))
