@@ -40,7 +40,7 @@ export class MapsTypesComponent implements OnInit {
 
     //! concatMap()
     // example(concatMap)(); //? Map values to inner observable, subscribe and emit in order, чекає за завершення попереднього Observable
-    // 0, 1, 2, 3, 4, concatMap completed - з затримкою в 3 секунди між кожним значенням отримаємо одразу всі значення
+    // 0, 1, 2, 3, 4, concatMap completed - з затримкою в 3 секунди між кожним значенням отримаємо всі значення
 
     //! switchMap()
     // example(switchMap)(); //? Map to observable, complete previous inner observable, emit values.
